@@ -8,11 +8,13 @@ O comando executa uma limpeza de branchs mergeadas com uma branch específica ou
 
 	#Todas as branchs locais mergeadas com uma branch específica (caso seja inserida) ou com a master
 	localClean = "!f() { \
+					git checkout ${1-master}; \
+					git pull; \
 					git fetch --prune; \
 					echo branchs já mergeadas com ${1-master} que serão deletadas:; \
-					git branch --merged ${1-master} | egrep -v \"(master|release|qa|dev)\"; \
+					git branch --merged ${1-master} | egrep -v \"(master|release|qa|project)\"; \
 					if [ ${2-no} == 'delete' ]; then \
-						git branch --merged ${1-master} | egrep -v \"(master|release|qa|dev)\" | xargs git branch -d; \
+						git branch --merged ${1-master} | egrep -v \"(master|release|qa|project)\" | xargs git branch -d; \
 					fi \
 				}; f"
 	
@@ -33,11 +35,13 @@ O funcionamento é o mesmo para o comando de exclusão da origin
 	#Todas as branchs remotas mergeadas com uma branch específica (caso seja inserido) ou com a master
 	#OBS: Caso delete alguma coisa que não deveria, esse comando não delete a branch local
 	originClean = "!f() { \
-					git fetch --prune; \
+					git checkout ${1-master}; \
+					git pull; \
+					git fetch --prune origin; \
 					echo branchs já mergeadas com ${1-master} que serão deletadas:; \
-					git branch -a --merged ${1-master} | egrep -v \"(master|release|qa|dev)\"; \
+					git branch -a --merged ${1-master} | awk '{sub(/remotes\\/origin\\//,\"\")} 1' | egrep -v \"(master|release|qa|project)\"; \
 					if [ ${2-no} == 'delete' ]; then \
-						git branch -a --merged ${1-master} | egrep -v \"(master|release|qa|dev)\" | xargs -n 1 git push --delete origin; \
+						git branch -a --merged ${1-master} | awk '{sub(/remotes\\/origin\\//,\"\")} 1' | egrep -v \"(master|release|qa|project)\" | xargs -n 1 git push --delete origin; \
 					fi \
 				}; f"
 
